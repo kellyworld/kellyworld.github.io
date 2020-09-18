@@ -10,6 +10,7 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 function getUniqueId() { //a silly function just to let you fork this codepen and have your own "database"
+  return "bGpvPmL";
   var CODEPEN_ID = /[codepen|cdpn]\.io\/[^/]+\/(?:pen|debug|fullpage|fullembedgrid)\/([^?#]+)/;
   var id;
   if(CODEPEN_ID.test(window.location.href)) {
