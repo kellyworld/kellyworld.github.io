@@ -14,22 +14,32 @@
                 <input id="username"></input>
                 <button id="submit">Buzz on in</button>
             </form>
-            <div id="howto">How to play</div>
+            <div>
+                <a id="howto-toggle" href="#">How to play</a>
+                <div id="howto">
+                    <p>Spelling Hive is a tournament-based variation of the NYTimes' Spelling Bee.</p>
+                    <p>To play, create a name and click Buzz on in. Once inside, you can join either team 1 or team 2, upon which you'll be thrown into the current round.</p>
+                    <p>Each round is 120 (or whatever, figure out a time) seconds long.</p>
+                    <p>To win, your team must submit the greatest number of words that are made up of the letters given, greater than three letters long, and contain the center letter.</p>
+                    <p>Have fun!</p>
+                </div>
+            </div>
         </div>
         <div id="win"></div>
     </div>
     <div id="content">
+        <div id="you"></div>
         <div id="middle">
             <div id="status"></div>
             <div id="letters">
-                <div id="letter1"></div>
-                <div id="letter2"></div>
-                <div id="letter3"></div>
-                <div id="letter4"></div>
-                <div id="letter5"></div>
-                <div id="letter6"></div>
-                <div id="letter7"></div>
-                <div id="shuffle"></div>
+                <div id="letter1" class="letter"></div>
+                <div id="letter2" class="letter"></div>
+                <div id="letter3" class="letter"></div>
+                <div id="letter4" class="letter"></div>
+                <div id="letter5" class="letter"></div>
+                <div id="letter6" class="letter"></div>
+                <div id="letter7" class="letter"></div>
+                <div id="shuffle">Shuffle</div>
                 <div id="timer"></div>
             </div>
         </div>
@@ -41,19 +51,19 @@
                     <div class="users"></div>
                     <ul id="wordlist1"></ul>
                     <input id="input1"></input>
-                    <button id="submit1"></button>
+                    <button id="submit1">Try</button>
                 </div>
             </div>
         </div>
         <div id="team2">
             <div id="team2-content" class="team-content">
-                <div class="join">Join Team 1</div>
+                <div class="join">Join Team 2</div>
                 <div class="game">
                     <h1>Team 2</h1>
                     <div class="users"></div>
                     <ul id="wordlist2"></ul>
                     <input id="input2"></input>
-                    <button id="submit2"></button>
+                    <button id="submit2">Try</button>
                 </div>
             </div>
         </div>

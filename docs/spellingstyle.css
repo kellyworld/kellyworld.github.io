@@ -1,0 +1,11 @@
+.join {
+    color: orange;
+    text-decoration: underline;
+}
+.join:hover{
+    color: brown;
+}
+
+#howto {
+    display: none;
+}
