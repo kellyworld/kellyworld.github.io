@@ -1,5 +1,3 @@
-# The People's Drudge Report
+# Welcome to my twisted mind
 
-A Pen created on CodePen.io. Original URL: [https://codepen.io/kellymi/pen/bGpvPmL](https://codepen.io/kellymi/pen/bGpvPmL).
-
-
+Kelly Mi's assignments for CISC472. 
