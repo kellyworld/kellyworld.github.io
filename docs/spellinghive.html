@@ -1,7 +1,61 @@
 <!DOCTYPE html>
 <head>
-    
+    <script src='https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js'></script>
+    <script src='https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js'></script>
+    <script  src="./spellingscript.js"></script>
+    <link rel="stylesheet" href="spellingstyle.css">
+
 </head>
 <body>
-    
+    <div id="overlay">
+        <div id="title">SPELLING HIVE</div>
+        <div id="buzzin">
+            <form id="start">
+                <input id="username"></input>
+                <button id="submit">Buzz on in</button>
+            </form>
+            <div id="howto">How to play</div>
+        </div>
+        <div id="win"></div>
+    </div>
+    <div id="content">
+        <div id="middle">
+            <div id="status"></div>
+            <div id="letters">
+                <div id="letter1"></div>
+                <div id="letter2"></div>
+                <div id="letter3"></div>
+                <div id="letter4"></div>
+                <div id="letter5"></div>
+                <div id="letter6"></div>
+                <div id="letter7"></div>
+                <div id="shuffle"></div>
+                <div id="timer"></div>
+            </div>
+        </div>
+        <div id="team1">
+            <div id="team1-content" class="team-content">
+                <div class="join">Join Team 1</div>
+                <div class="game">
+                    <h1>Team 1</h1>
+                    <div class="users"></div>
+                    <ul id="wordlist1"></ul>
+                    <input id="input1"></input>
+                    <button id="submit1"></button>
+                </div>
+            </div>
+        </div>
+        <div id="team2">
+            <div id="team2-content" class="team-content">
+                <div class="join">Join Team 1</div>
+                <div class="game">
+                    <h1>Team 2</h1>
+                    <div class="users"></div>
+                    <ul id="wordlist2"></ul>
+                    <input id="input2"></input>
+                    <button id="submit2"></button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
