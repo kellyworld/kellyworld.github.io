@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src='https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js'></script>
     <script src='https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js'></script>
     <script  src="./spellingscript.js"></script>
@@ -10,17 +11,15 @@
     <div id="overlay">
         <div id="title">SPELLING HIVE</div>
         <div id="buzzin">
-            <form id="start">
-                <input id="username"></input>
-                <button id="submit">Buzz on in</button>
-            </form>
+            <input id="username"></input>
+            <button id="buzzin">Buzz on in</button>
             <div>
                 <a id="howto-toggle" href="#">How to play</a>
                 <div id="howto">
                     <p>Spelling Hive is a tournament-based variation of the NYTimes' Spelling Bee.</p>
                     <p>To play, create a name and click Buzz on in. Once inside, you can join either team 1 or team 2, upon which you'll be thrown into the current round.</p>
                     <p>Each round is 120 (or whatever, figure out a time) seconds long.</p>
-                    <p>To win, your team must submit the greatest number of words that are made up of the letters given, greater than three letters long, and contain the center letter.</p>
+                    <p>To win, your team must submit the greatest number of words that are made up of the letters given, greater than three letters long, less than 15 and contain the center letter.</p>
                     <p>Have fun!</p>
                 </div>
             </div>
