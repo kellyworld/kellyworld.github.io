@@ -26,9 +26,9 @@ let addUser = () => {
 }
 
 let hivewords = [];
-let pangram = "";
+let pangram = "default";
 let anagrams = []
-let letters = []; // the center letter will always be the 7th slot 
+let letters = ["d", "e", "f", "a", "u", "l", "t"]; // the center letter will always be the 7th slot 
 let userTeam = 0;
 let centerLetter = "";
 
@@ -60,7 +60,7 @@ let initializeGame = (team) => {
     return pangram;
 }
 
-let initializeLetters = (pangram) => {
+let initializeLetters = () => {
     letterSet = new Set();
     for (var i = 0; i < pangram.length; i++){
         letterSet.add(pangram[i]);
@@ -103,6 +103,8 @@ window.onload = () => {
     
     firebase.database().ref('hivewords').once('value').then((snapshot) => {hivewords = snapshot.val()});
     
+    initializeLetters();
+
     document.getElementById("buzzin").addEventListener("click", () => {
         const name = document.getElementById("username").value;
         addUser();
