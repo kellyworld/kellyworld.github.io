@@ -18,26 +18,25 @@ if (!uuid){
 }
 
 // idfk how to do anything with the database bc it wont let me fking look at it
-
+firebase.database().ref('/words').remove();
 let addUser = () => {
     return firebase.database().ref('spelling').once('value').then(function(snapshot) {
         console.log(snapshot.val().users);
       });
 }
 
-
+let hivewords = [];
 let pangram = "";
+let anagrams = []
 let letters = []; // the center letter will always be the 7th slot 
 let userTeam = 0;
 let centerLetter = "";
 
-let getAnagrams = (pangram) => {
-    let anagrams = [];
-    const pangramLetters = hivedictionary[pangram];
+let findAnagrams = () => {
     for (word of hivewords){
         let isAnagram = true;
         for (letter of word){
-            if (!pangramLetters.includes(letter)){
+            if (!letters.includes(letter)){
                 isAnagram = false;
             }
         }
@@ -45,7 +44,6 @@ let getAnagrams = (pangram) => {
             anagrams.push(word);
         }
     }
-    return anagrams;
 }
 
 let initializeGame = (team) => {
@@ -102,7 +100,9 @@ let shuffle = (letters) => {
 
 
 window.onload = () => {
-
+    
+    firebase.database().ref('hivewords').once('value').then((snapshot) => {hivewords = snapshot.val()});
+    
     document.getElementById("buzzin").addEventListener("click", () => {
         const name = document.getElementById("username").value;
         addUser();
