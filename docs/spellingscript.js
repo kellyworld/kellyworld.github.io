@@ -17,21 +17,14 @@ if (!uuid){
   localStorage.setItem("uuid", uuid);
 }
 
-let userCount = firebase.database().ref("spelling");
-userCount.child('users').set(0);
-
 // idfk how to do anything with the database bc it wont let me fking look at it
 
 let addUser = () => {
-    let count = userCount.child('users');
-    count.orderByKey().
-    userCount.child('users').set(2);
+    return firebase.database().ref('spelling').once('value').then(function(snapshot) {
+        console.log(snapshot.val().users);
+      });
 }
 
-$.ajax({
-    url: 'dictionary.csv',
-    dataType: 'text',
-}).done(success);
 
 let scrabblewords = []; // all scrabble words
 let hivewords = []; // all words valid for spelling hive
@@ -59,13 +52,13 @@ let success = (data) => {
         return [word, [...letters]];
     }));
     pangrams = scrabblewords.filter((word) => {
-        return hivedictionary.get(word).length == 7;
+        return hivedictionary[word].length == 7;
     })
 }
 
 let getAnagrams = (pangram) => {
     let anagrams = [];
-    const pangramLetters = hivedictionary.get(pangram);
+    const pangramLetters = hivedictionary[pangram];
     for (word of hivewords){
         let isAnagram = true;
         for (letter of word){
@@ -77,12 +70,24 @@ let getAnagrams = (pangram) => {
             anagrams.push(word);
         }
     }
+    return anagrams;
+}
+
+let initializeGame = (team) => {
+    const pangram = pangrams[(Math.floor(Math.random()*pangrams.length))];
+    let letters = document.getElementById("letters").children;
+    for (var i = 0; i < 7; i++){
+        //letters[i].innerHTML = hivedictionary[pangram][i];
+    }
+    return pangram;
 }
 
 window.onload = () => {
+
     document.getElementById("buzzin").addEventListener("click", () => {
         const name = document.getElementById("username").value;
         addUser();
+        console.log(initializeGame(1));
         console.log(name);
     });
 
