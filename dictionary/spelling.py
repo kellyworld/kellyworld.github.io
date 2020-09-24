@@ -5,7 +5,8 @@ scrabblewords = []
 sortedwords = []
 hivewords = [] 
 hivedictionary = {}
-pangrams = []
+pangrams = {}
+pangrams["pangram_list"] = []
 pangramdictionary = {}
 words = {}
 
@@ -35,10 +36,11 @@ for i in range(len(sortedwords)):
         good = False
     if good:
         if pangram:
-            pangrams.append(scrabblewords[i][0])
+            pangrams["pangram_list"].append(scrabblewords[i][0])
         hivewords.append({"word": scrabblewords[i][0], "letters": sortedwords[i], "pangram?": pangram})
         hivedictionary[scrabblewords[i][0]] = sortedwords[i]
 
+pangrams["number_of_pangrams"] = len(pangrams["pangram_list"])
 #print(pangrams)
 
 def get_anagrams(pangram):
@@ -57,10 +59,6 @@ def get_anagrams(pangram):
 #     print(word)
 #     anagrams = get_anagrams(word)
 #     pangramdictionary[word] = anagrams
-
-words["pangrams"] = pangrams
-words["hivewords"] = hivewords
-words["hivedictionary"] = hivedictionary
 
 # print(hivedictionary)
 

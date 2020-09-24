@@ -26,35 +26,10 @@ let addUser = () => {
 }
 
 
-let scrabblewords = []; // all scrabble words
-let hivewords = []; // all words valid for spelling hive
-let hivedictionary = {} // all words valid for spelling hive, word: letters
-let pangrams = [] // all pangrams 
-
-let success = (data) => {
-    scrabblewords = data.split(/\r?\n|\r/); // regex splits data into rows
-    hivewords = scrabblewords.filter((word) => {
-        let letters = Set();
-        for (letter of word) {
-            letters.add(letter);
-        }
-        if (letters.size <= 7 && word.length > 3 && word.length < 15) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
-    hivedictionary = Object.fromEntries(hivewords.map((word) => {
-        let letters = Set();
-        for (letter of word) {
-            letters.add(letter);
-        }
-        return [word, [...letters]];
-    }));
-    pangrams = scrabblewords.filter((word) => {
-        return hivedictionary[word].length == 7;
-    })
-}
+let pangram = "";
+let letters = []; // the center letter will always be the 7th slot 
+let userTeam = 0;
+let centerLetter = "";
 
 let getAnagrams = (pangram) => {
     let anagrams = [];
@@ -74,13 +49,57 @@ let getAnagrams = (pangram) => {
 }
 
 let initializeGame = (team) => {
-    const pangram = pangrams[(Math.floor(Math.random()*pangrams.length))];
-    let letters = document.getElementById("letters").children;
-    for (var i = 0; i < 7; i++){
-        //letters[i].innerHTML = hivedictionary[pangram][i];
-    }
+    let pangramNum = 0;
+    firebase.database().ref('pangrams/number_of_pangrams').once('value')
+        .then((snapshot) => { 
+            pangramNum = Math.floor(Math.random() * snapshot.val()); // pick a random pangram
+        })
+        .then(() => {
+            firebase.database().ref('pangrams/pangram_list/' + pangramNum).once('value') //retrieve pangram
+            .then((snapshot) => { pangram = snapshot.val(); console.log(snapshot.val())}) 
+            .then( () => { initializeLetters(pangram) })});
+     // sorry for creating this disgusting promise chain
     return pangram;
 }
+
+let initializeLetters = (pangram) => {
+    letterSet = new Set();
+    for (var i = 0; i < pangram.length; i++){
+        letterSet.add(pangram[i]);
+    }
+    letters = [...letterSet];
+    shuffleLetters();
+}
+
+let shuffleLetters = () => {
+    shuffle(letters);
+    const letterSlots = document.getElementById("letters").children;
+    for (var i = 0; i < 7; i++){
+        letterSlots[i].innerHTML = letters[i];
+    }
+}
+
+//shuffles all EXCEPT LAST LETTER IN ARRAY (center letter)
+let shuffle = (letters) => {
+    let counter = letters.length - 1;
+
+    // While there are elements in the array
+    while (counter > 0) {
+        // Pick a random index
+        let index = Math.floor(Math.random() * counter);
+
+        // Decrease counter by 1
+        counter--;
+
+        // And swap the last element with it
+        let temp = letters[counter];
+        letters[counter] = letters[index];
+        letters[index] = temp;
+    }
+
+    return letters;
+}
+
 
 window.onload = () => {
 
@@ -98,4 +117,8 @@ window.onload = () => {
             document.getElementById("howto").style.display = "block";
         }
     });
+
+    document.getElementById("shuffle").addEventListener("click", () => {
+        shuffleLetters();
+    })
 };
