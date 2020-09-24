@@ -28,6 +28,56 @@ let addUser = () => {
     userCount.child('users').set(2);
 }
 
+$.ajax({
+    url: 'dictionary.csv',
+    dataType: 'text',
+}).done(success);
+
+let scrabblewords = []; // all scrabble words
+let hivewords = []; // all words valid for spelling hive
+let hivedictionary = {} // all words valid for spelling hive, word: letters
+let pangrams = [] // all pangrams 
+
+let success = (data) => {
+    scrabblewords = data.split(/\r?\n|\r/); // regex splits data into rows
+    hivewords = scrabblewords.filter((word) => {
+        let letters = Set();
+        for (letter of word) {
+            letters.add(letter);
+        }
+        if (letters.size <= 7 && word.length > 3 && word.length < 15) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+    hivedictionary = Object.fromEntries(hivewords.map((word) => {
+        let letters = Set();
+        for (letter of word) {
+            letters.add(letter);
+        }
+        return [word, [...letters]];
+    }));
+    pangrams = scrabblewords.filter((word) => {
+        return hivedictionary.get(word).length == 7;
+    })
+}
+
+let getAnagrams = (pangram) => {
+    let anagrams = [];
+    const pangramLetters = hivedictionary.get(pangram);
+    for (word of hivewords){
+        let isAnagram = true;
+        for (letter of word){
+            if (!pangramLetters.includes(letter)){
+                isAnagram = false;
+            }
+        }
+        if (isAnagram) {
+            anagrams.push(word);
+        }
+    }
+}
 
 window.onload = () => {
     document.getElementById("buzzin").addEventListener("click", () => {
