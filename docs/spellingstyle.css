@@ -20,6 +20,13 @@
     background-color: yellow;
 }
 
+#you {
+    position: absolute;
+    display: none;
+    right: 50%;
+    bottom: 50%;
+}
+
 .letter {
     background-image: url('./img/hexagon.png');
     background-repeat: no-repeat;
@@ -29,6 +36,18 @@
     padding: 20px;
     display: inline-block;
     position: absolute;
+}
+
+#login {
+    display: none;
+}
+
+#olduser {
+    display: none;
+}
+
+#newuser {
+    display: none;
 }
 
 #letter7 {

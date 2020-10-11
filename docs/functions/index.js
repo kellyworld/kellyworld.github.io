@@ -12,6 +12,17 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+// Take the text parameter passed to this HTTP endpoint and insert it into 
+// Cloud Firestore under the path /messages/:documentId/original
+exports.addMessage = functions.https.onRequest(async (req, res) => {
+    // Grab the text parameter.
+    const original = req.query.text;
+    // Push the new message into Cloud Firestore using the Firebase Admin SDK.
+    const writeResult = await admin.firestore().collection('messages').add({original: original});
+    // Send back a message that we've succesfully written the message
+    res.json({result: `Message with ID: ${writeResult.id} added.`});
+  });
+
 // Listens for new messages added to /messages/:documentId/original and creates an
 // uppercase version of the message to /messages/:documentId/uppercase
 exports.makeUppercase = functions.firestore.document('/messages/{documentId}')
@@ -30,7 +41,14 @@ exports.makeUppercase = functions.firestore.document('/messages/{documentId}')
       return snap.ref.set({uppercase}, {merge: true});
     });
 
-// return json object 
-exports.getCurrentGameInfo = null; // return game json obj
-exports.tryWord = null; // return word score, 0 if invalid (reasons?)
-exports.getPangram = null;
+exports.startGame = null; // initiate a game and start timer
+// returns game
+
+/* return score if valid, 0 if invalid
+* Each four-letter word found is worth one point. 
+* Longer words are scored according to their length, 
+* with five-letter words worth five points, six-letters words worth six points, and so on.
+* If a word is a pangram, it's worth its length plus a bonus of seven points. 
+* For instance, the pangram "whippoorwill" is twelve letters in length, which makes it worth 19 points.
+*/
+exports.tryWord = null; 

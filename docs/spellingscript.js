@@ -1,3 +1,39 @@
+
+// sample api request
+// document.getElementById("getJoke").addEventListener('click', function(){
+//     fetch("https://api.nasa.gov/insight_weather/?api_key=073ZmaEnXW2sXjxLxvovaM5WarZuSQ5iz9mhgAgO&feedtype=json&ver=1.0",
+//           {method: "GET"})
+//          .then(response => response.json())
+//          .then(data => showWeather(data)); 
+//    });
+
+// use this if you need to delete stuff 
+// firebase.database().ref('users/1602389425974/id').remove(); 
+
+// how to write to specific children of a node without overwriting other child nodes
+// function writeNewPost(uid, username, picture, title, body) {
+//     // A post entry.
+//     var postData = {
+//       author: username,
+//       uid: uid,
+//       body: body,
+//       title: title,
+//       starCount: 0,
+//       authorPic: picture
+//     };
+  
+//     // Get a key for a new Post.
+//     var newPostKey = firebase.database().ref().child('posts').push().key;
+  
+//     // Write the new post's data simultaneously in the posts list and the user's post list.
+//     var updates = {};
+//     updates['/posts/' + newPostKey] = postData;
+//     updates['/user-posts/' + uid + '/' + newPostKey] = postData;
+  
+//     return firebase.database().ref().update(updates);
+//   }
+  
+
 // Your web app's Firebase configuration
 var firebaseConfig = {
     apiKey: "AIzaSyCcespW_NRWe42xNVIz_g8Y0Bs682pbNVY",
@@ -11,42 +47,70 @@ var firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-let user = {
-    id: localStorage.getItem("spellinghive_id"),
-    username: ""
-};
 
+// change this later to update live
 let gameState = firebase.database().ref('current_game').once('value').then((snapshot) => snapshot.val());
 let pangram = (gameState.id == undefined) ? "default" : gameState.pangram;
 let anagrams = (gameState.id == undefined) ? {team1: [], team2: []} : gameState.words;
 let centerLetter = (gameState.id == undefined) ? "" : gameState.center_letter;
 let letters = (gameState.id == undefined) ? ["d", "e", "f", "a", "u", "l", "t"] : initializeLetters(centerLetter, gameState.pangram); // the center letter will always be the 7th slot 
+let user = {};
+
+// lookup/init user
+let userid = localStorage.getItem("spellinghive_id");
+
+// set user id in local storage if not found
+if (!userid){
+    let a = new Date();
+    userid = a.getTime();
+    localStorage.setItem("spellinghive_id", userid);
+}
+
+let login = () => {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("login").style.display = "block";
+    if (user.username) { // pre existing user
+        document.getElementById("olduser").style.display = "block";
+        document.getElementById("olduser").innerHTML = `Welcome ${user.username}!`;
+    } else {
+        document.getElementById("newuser").style.display = "inline-block";
+    }
+}
+
+let initializeUser = (userid) => {
+    user.id = userid;
+    return firebase.database().ref('/users/' + userid).once('value').then((snapshot) => {
+        user.username = snapshot.val().username;
+        user.highscore = snapshot.val().highscore;
+        login();
+    });
+}
+
+let addUser = (name, id) => {
+    console.log(id);
+    firebase.database().ref('users/' + id).set({
+        username: name,
+        id: id,
+        highscore: 0
+      })
+      .then(initializeUser(userid));
+}
 
 let enterGame = () => {
-    // check if user is existing
-    // else add user to database
+    // if user does not already exist add to database
+    if (!user.username){
+        let username = document.getElementById("username").value;
+        addUser(username, userid);
+    }
+
+    document.getElementById("you").style.display = "block";
 
     // check if game in session
     // if yes join selected team
 
     // else start a game
-}
 
-// set user id in local storage
-if (!user){
-    let a = new Date();
-    let userid = a.getTime();
-    localStorage.setItem("spellinghive_id", userid);
-}
-
-// use this if you need to delete stuff 
-// firebase.database().ref('/words').remove(); 
-
-// this doesnt fucking work yet 
-let addUser = () => {
-    return firebase.database().ref('spelling').once('value').then(function(snapshot) {
-        console.log(snapshot.val().users);
-      });
+    // appearify submit word area
 }
 
 // update game state on change
@@ -79,33 +143,28 @@ let checkAnagram = (word) => {
 }
 
 // calculate number of points for a word
-/* Each four-letter word found is worth one point. 
-* Longer words are scored according to their length, 
-* with five-letter words worth five points, six-letters words worth six points, and so on.
-* If a word is a pangram, it's worth its length plus a bonus of seven points. 
-* For instance, the pangram "whippoorwill" is twelve letters in length, which makes it worth 19 points.
-*/
-
+// do not use this. do this on the server 
 let getPoints = () => {
     return 0;
 }
 
 // function should set the current game in the database
-let startGame = () => {
-    let time = new Date();
-    let game = {
-        id: time.getTime(), 
-        users: {
-            team1: [],
-            team2: []
-        },
-        pangram: "",
-        words: {
-            team1: [],
-            team2: []
-        }
-    }
-}
+// let startGame = () => {
+//     let time = new Date();
+//     let game = {
+//         id: time.getTime(), 
+//         users: {
+//             team1: [],
+//             team2: []
+//         },
+//         pangram: "",
+//         words: {
+//             team1: [],
+//             team2: []
+//         }
+//         centerLetter: 
+//     }
+
 
 let getUniqueLetters = (word) => {
     let letterSet = new Set();
@@ -114,6 +173,7 @@ let getUniqueLetters = (word) => {
     }
     return [...letterSet];
 }
+
 
 // these should be obsolete later... 
 let initializeGame = (team) => {
@@ -172,18 +232,17 @@ let shuffle = (letters) => {
     return letters;
 }
 
-
 window.onload = () => {
     
     firebase.database().ref('hivewords').once('value').then((snapshot) => {hivewords = snapshot.val()});
     
+    // it tries to look up and initialize the user upon load based on id. 
+    // if it can't the user object will be empty except id
+    initializeUser(userid);
     shuffleLetters();
 
     document.getElementById("buzzin").addEventListener("click", () => {
-        const name = document.getElementById("username").value;
-        addUser();
-        console.log(initializeGame(1));
-        console.log(name);
+        enterGame(); 
     });
 
     document.getElementById("howto-toggle").addEventListener("click", () => {
@@ -195,4 +254,10 @@ window.onload = () => {
     });
 
     document.getElementById("shuffle").addEventListener("click", shuffleLetters);
+    document.addEventListener('keyup', event => {
+        if (event.code === 'Space') {
+          shuffleLetters();
+        }
+      })
+          
 };

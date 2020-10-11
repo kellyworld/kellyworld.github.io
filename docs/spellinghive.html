@@ -10,28 +10,35 @@
 <body>
     <div id="overlay">
         <div id="title">SPELLING HIVE</div>
-        <div id="newuser">
-            <input id="username"></input>
-            <button id="buzzin">Buzz on in</button>
+        <h3 id="loading">loading...</h3>
+        <div id="login">
+            <h2 id="olduser"></h2>
+            <span id="newuser">
+                <input type="text" id="username"></input>
+            </span>
             <input type="radio" id="team1" name="team" value="team1" />
             <label for="team1">Team 1</label>
             <input type="radio" id="team2" name="team" value="team2" />
             <label for="team1">Team 2</label>
-            <div>
-                <a id="howto-toggle" href="#">How to play</a>
-                <div id="howto">
-                    <p>Spelling Hive is a tournament-based variation of the NYTimes' Spelling Bee.</p>
-                    <p>To play, create a name and click Buzz on in. Once inside, you can join either team 1 or team 2, upon which you'll be thrown into the current round.</p>
-                    <p>Each round is 120 (or whatever, figure out a time) seconds long.</p>
-                    <p>To win, your team must submit the greatest number of words that are made up of the letters given, greater than three letters long, less than 15 and contain the center letter.</p>
-                    <p>Have fun!</p>
-                </div>
+            <button id="buzzin">Buzz on in</button>
+        </div>
+        <div>
+            <a id="howto-toggle" href="#">How to play</a>
+            <div id="howto">
+                <p>Spelling Hive is a tournament-based variation of the NYTimes' Spelling Bee.</p>
+                <p>To play, create a name and click Buzz on in. Once inside, you can join either team 1 or team 2, upon which you'll be thrown into the current round.</p>
+                <p>Each round is 120 (or whatever, figure out a time) seconds long.</p>
+                <p>To win, your team must submit the greatest number of words that are made up of the letters given, greater than three letters long, less than 15 and contain the center letter.</p>
+                <p>Have fun!</p>
             </div>
         </div>
         <div id="win"></div>
     </div>
     <div id="content">
-        <div id="you"></div>
+        <div id="you">
+            <input type="text" id="tryword">
+            <button id="try">Try word</button>
+        </div>
         <div id="middle">
             <div id="status"></div>
             <div id="letters">
