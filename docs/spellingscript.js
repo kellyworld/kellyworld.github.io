@@ -8,44 +8,114 @@ var firebaseConfig = {
     messagingSenderId: "887217083121",
     appId: "1:887217083121:web:81e0a8f2096c593d594f50"
 };
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-let uuid = localStorage.getItem("spellinghive_id");
+let user = {
+    id: localStorage.getItem("spellinghive_id"),
+    username: ""
+};
 
-if (!uuid){
-  uuid = `spellinghive_id-${Math.floor(1000000000*Math.random())}`;
-  localStorage.setItem("uuid", uuid);
+let gameState = firebase.database().ref('current_game').once('value').then((snapshot) => snapshot.val());
+let pangram = (gameState.id == undefined) ? "default" : gameState.pangram;
+let anagrams = (gameState.id == undefined) ? {team1: [], team2: []} : gameState.words;
+let centerLetter = (gameState.id == undefined) ? "" : gameState.center_letter;
+let letters = (gameState.id == undefined) ? ["d", "e", "f", "a", "u", "l", "t"] : initializeLetters(centerLetter, gameState.pangram); // the center letter will always be the 7th slot 
+
+let enterGame = () => {
+    // check if user is existing
+    // else add user to database
+
+    // check if game in session
+    // if yes join selected team
+
+    // else start a game
 }
 
-// idfk how to do anything with the database bc it wont let me fking look at it
-firebase.database().ref('/words').remove();
+// set user id in local storage
+if (!user){
+    let a = new Date();
+    let userid = a.getTime();
+    localStorage.setItem("spellinghive_id", userid);
+}
+
+// use this if you need to delete stuff 
+// firebase.database().ref('/words').remove(); 
+
+// this doesnt fucking work yet 
 let addUser = () => {
     return firebase.database().ref('spelling').once('value').then(function(snapshot) {
         console.log(snapshot.val().users);
       });
 }
 
-let hivewords = [];
-let pangram = "default";
-let anagrams = []
-let letters = ["d", "e", "f", "a", "u", "l", "t"]; // the center letter will always be the 7th slot 
-let userTeam = 0;
-let centerLetter = "";
+// update game state on change
+firebase.database().ref('current_game').on('child_changed', () => {
+    // update game state
+});
 
-let findAnagrams = () => {
-    for (word of hivewords){
-        let isAnagram = true;
-        for (letter of word){
-            if (!letters.includes(letter)){
-                isAnagram = false;
-            }
-        }
-        if (isAnagram) {
-            anagrams.push(word);
+// returns point value of word submission
+let submitWord = (word) => {
+    // check valid (> 3 letters, < 15)
+    checkAnagram(word);
+    // check if already submitted
+
+}
+
+// HELPER function to check if a word is an anagram of the pangram
+let checkAnagram = (word) => {
+    // REDO THIS SO IT USES AN API ENDPOINT
+    // for (word of hivewords){
+    //     let isAnagram = true;
+    //     for (letter of word){
+    //         if (!letters.includes(letter)){
+    //             isAnagram = false;
+    //         }
+    //     }
+    //     if (isAnagram) {
+    //         anagrams.push(word);
+    //     }
+    // }
+}
+
+// calculate number of points for a word
+/* Each four-letter word found is worth one point. 
+* Longer words are scored according to their length, 
+* with five-letter words worth five points, six-letters words worth six points, and so on.
+* If a word is a pangram, it's worth its length plus a bonus of seven points. 
+* For instance, the pangram "whippoorwill" is twelve letters in length, which makes it worth 19 points.
+*/
+
+let getPoints = () => {
+    return 0;
+}
+
+// function should set the current game in the database
+let startGame = () => {
+    let time = new Date();
+    let game = {
+        id: time.getTime(), 
+        users: {
+            team1: [],
+            team2: []
+        },
+        pangram: "",
+        words: {
+            team1: [],
+            team2: []
         }
     }
 }
 
+let getUniqueLetters = (word) => {
+    let letterSet = new Set();
+    for (var i = 0; i < word.length; i++){
+        letterSet.add(word[i]);
+    }
+    return [...letterSet];
+}
+
+// these should be obsolete later... 
 let initializeGame = (team) => {
     let pangramNum = 0;
     firebase.database().ref('pangrams/number_of_pangrams').once('value')
@@ -56,17 +126,21 @@ let initializeGame = (team) => {
             firebase.database().ref('pangrams/pangram_list/' + pangramNum).once('value') //retrieve pangram
             .then((snapshot) => { pangram = snapshot.val(); console.log(snapshot.val())}) 
             .then( () => { initializeLetters(pangram) })});
-     // sorry for creating this disgusting promise chain
     return pangram;
 }
 
-let initializeLetters = () => {
-    letterSet = new Set();
-    for (var i = 0; i < pangram.length; i++){
-        letterSet.add(pangram[i]);
+let initializeLetters = (centerLetter, pangram) => {
+    let panLetters = getUniqueLetters(pangram);
+    let tempLetters = [];
+    for(var i = 0; i < panLetters.length; i++) {
+        if (let == centerLetter){
+            // pass
+        } else {
+            tempLetters.push(panLetters[i]);
+        }
     }
-    letters = [...letterSet];
-    shuffleLetters();
+    tempLetters.push(centerLetter);
+    return tempLetters;
 }
 
 let shuffleLetters = () => {
@@ -103,7 +177,7 @@ window.onload = () => {
     
     firebase.database().ref('hivewords').once('value').then((snapshot) => {hivewords = snapshot.val()});
     
-    initializeLetters();
+    shuffleLetters();
 
     document.getElementById("buzzin").addEventListener("click", () => {
         const name = document.getElementById("username").value;
@@ -120,7 +194,5 @@ window.onload = () => {
         }
     });
 
-    document.getElementById("shuffle").addEventListener("click", () => {
-        shuffleLetters();
-    })
+    document.getElementById("shuffle").addEventListener("click", shuffleLetters);
 };

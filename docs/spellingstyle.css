@@ -8,6 +8,10 @@
 
 #howto {
     display: none;
+    width: 400px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
 }
 
 #letters {

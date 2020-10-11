@@ -13,6 +13,10 @@
         <div id="newuser">
             <input id="username"></input>
             <button id="buzzin">Buzz on in</button>
+            <input type="radio" id="team1" name="team" value="team1" />
+            <label for="team1">Team 1</label>
+            <input type="radio" id="team2" name="team" value="team2" />
+            <label for="team1">Team 2</label>
             <div>
                 <a id="howto-toggle" href="#">How to play</a>
                 <div id="howto">
@@ -39,30 +43,25 @@
                 <div id="letter6" class="letter"></div>
                 <div id="letter7" class="letter"></div>
             </div>
-            <div id="shuffle">Shuffle</div>
-            <div id="timer"></div>
+            <button id="shuffle">Shuffle</button>
         </div>
+        <h1>Current game status</h1>
+        <div id="timer"></div>
         <div id="team1">
             <div id="team1-content" class="team-content">
-                <div class="join">Join Team 1</div>
                 <div class="game">
-                    <h1>Team 1</h1>
+                    <h2>Team 1</h1>
                     <div class="users"></div>
                     <ul id="wordlist1"></ul>
-                    <input id="input1"></input>
-                    <button id="submit1">Try</button>
                 </div>
             </div>
         </div>
         <div id="team2">
             <div id="team2-content" class="team-content">
-                <div class="join">Join Team 2</div>
                 <div class="game">
-                    <h1>Team 2</h1>
+                    <h2>Team 2</h1>
                     <div class="users"></div>
                     <ul id="wordlist2"></ul>
-                    <input id="input2"></input>
-                    <button id="submit2">Try</button>
                 </div>
             </div>
         </div>
