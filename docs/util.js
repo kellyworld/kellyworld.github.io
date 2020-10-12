@@ -1,0 +1,1 @@
+// put all the random stupid functions in here later lol

@@ -6,6 +6,10 @@
     color: brown;
 }
 
+.game {
+    width:50%;
+}
+
 #howto {
     display: none;
     width: 400px;
@@ -36,6 +40,10 @@
     padding: 20px;
     display: inline-block;
     position: absolute;
+}
+
+.user {
+    color: red;
 }
 
 #login {

@@ -4,6 +4,7 @@
     <script src='https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js'></script>
     <script src='https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js'></script>
     <script  src="./spellingscript.js"></script>
+    <script  src="./listeners.js"></script>
     <link rel="stylesheet" href="spellingstyle.css">
 
 </head>
@@ -16,9 +17,9 @@
             <span id="newuser">
                 <input type="text" id="username"></input>
             </span>
-            <input type="radio" id="team1" name="team" value="team1" />
+            <input type="radio" id="team1" name="team" value="1" />
             <label for="team1">Team 1</label>
-            <input type="radio" id="team2" name="team" value="team2" />
+            <input type="radio" id="team2" name="team" value="2" />
             <label for="team1">Team 2</label>
             <button id="buzzin">Buzz on in</button>
         </div>
@@ -55,22 +56,42 @@
         <h1>Current game status</h1>
         <div id="timer"></div>
         <div id="team1">
-            <div id="team1-content" class="team-content">
-                <div class="game">
-                    <h2>Team 1</h1>
-                    <div class="users"></div>
-                    <ul id="wordlist1"></ul>
-                </div>
-            </div>
+            <h2>Team 1</h1>
+            <table id="team1-content" class="game">
+                <tr>
+                    <th>Users:</th>
+                    <th>Words:</th>
+                </tr>
+                <tr>
+                    <td>
+                        <ul id="users1" class="users">
+                        </ul>
+                    </td>
+                    <td>
+                        <ol id="words1" class="words">
+                        </ol>
+                    </td>
+                </tr>
+            </table>
         </div>
         <div id="team2">
-            <div id="team2-content" class="team-content">
-                <div class="game">
-                    <h2>Team 2</h1>
-                    <div class="users"></div>
-                    <ul id="wordlist2"></ul>
-                </div>
-            </div>
+            <h2>Team 2</h1>
+            <table id="team2-content" class="game">
+                <tr>
+                    <th>Users:</th>
+                    <th>Words:</th>
+                </tr>
+                <tr>
+                    <td>
+                        <ul id="users2" class="users">
+                        </ul>
+                    </td>
+                    <td>
+                        <ol id="words2" class="words">
+                        </ol>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>

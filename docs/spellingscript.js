@@ -49,13 +49,14 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 // change this later to update live
-let gameState = firebase.database().ref('current_game').once('value').then((snapshot) => snapshot.val());
+let gameState = {};
+firebase.database().ref('current_game').once('value').then((snapshot) => gameState = snapshot.val());
 let pangram = (gameState.id == undefined) ? "default" : gameState.pangram;
 let anagrams = (gameState.id == undefined) ? {team1: [], team2: []} : gameState.words;
 let centerLetter = (gameState.id == undefined) ? "" : gameState.center_letter;
 let letters = (gameState.id == undefined) ? ["d", "e", "f", "a", "u", "l", "t"] : initializeLetters(centerLetter, gameState.pangram); // the center letter will always be the 7th slot 
 let user = {};
-
+let team = 0;
 // lookup/init user
 let userid = localStorage.getItem("spellinghive_id");
 
@@ -96,7 +97,16 @@ let addUser = (name, id) => {
       .then(initializeUser(userid));
 }
 
-let enterGame = () => {
+//idk maybe do this later
+let loadPreview = async () => {}
+
+let joinGame = async (user) => {
+    var updates = {};
+    updates[`/users/team${team}/${user.id}`] = user;
+    firebase.database().ref('current_game').update(updates);
+}
+
+let enterGame = async () => {
     // if user does not already exist add to database
     if (!user.username){
         let username = document.getElementById("username").value;
@@ -106,11 +116,12 @@ let enterGame = () => {
     document.getElementById("you").style.display = "block";
 
     // check if game in session
-    // if yes join selected team
-
-    // else start a game
-
-    // appearify submit word area
+    if (!gameState) {
+        //start a game
+        await startGame();
+    }
+    team = document.querySelector('input[name="team"]:checked').value;
+    await joinGame(user, team);
 }
 
 // update game state on change
@@ -128,7 +139,6 @@ let submitWord = (word) => {
 
 // HELPER function to check if a word is an anagram of the pangram
 let checkAnagram = (word) => {
-    // REDO THIS SO IT USES AN API ENDPOINT
     // for (word of hivewords){
     //     let isAnagram = true;
     //     for (letter of word){
@@ -143,27 +153,30 @@ let checkAnagram = (word) => {
 }
 
 // calculate number of points for a word
-// do not use this. do this on the server 
 let getPoints = () => {
     return 0;
 }
 
 // function should set the current game in the database
-// let startGame = () => {
-//     let time = new Date();
-//     let game = {
-//         id: time.getTime(), 
-//         users: {
-//             team1: [],
-//             team2: []
-//         },
-//         pangram: "",
-//         words: {
-//             team1: [],
-//             team2: []
-//         }
-//         centerLetter: 
-//     }
+let startGame = () => {
+    let t = new Date();
+    let game = {
+        time: t.getTime(), 
+        users: {
+            team1: {},
+            team2: {}
+        },
+        pangram: "",
+        words: {
+            team1: {},
+            team2: {}
+        },
+        centerLetter: ""
+    };
+    game.pangram = findPangram();
+    game.centerLetter = game.pangram[Math.floor(Math.random() * 7)]; // random letter from pangram
+    return firebase.database().ref('current_game').set(game); // return promise
+}
 
 
 let getUniqueLetters = (word) => {
@@ -176,7 +189,7 @@ let getUniqueLetters = (word) => {
 
 
 // these should be obsolete later... 
-let initializeGame = (team) => {
+let findPangram = () => {
     let pangramNum = 0;
     firebase.database().ref('pangrams/number_of_pangrams').once('value')
         .then((snapshot) => { 
@@ -184,8 +197,8 @@ let initializeGame = (team) => {
         })
         .then(() => {
             firebase.database().ref('pangrams/pangram_list/' + pangramNum).once('value') //retrieve pangram
-            .then((snapshot) => { pangram = snapshot.val(); console.log(snapshot.val())}) 
-            .then( () => { initializeLetters(pangram) })});
+            .then((snapshot) => { pangram = snapshot.val(); })
+        });
     return pangram;
 }
 
@@ -210,6 +223,7 @@ let shuffleLetters = () => {
         letterSlots[i].innerHTML = letters[i];
     }
 }
+
 
 //shuffles all EXCEPT LAST LETTER IN ARRAY (center letter)
 let shuffle = (letters) => {
@@ -261,3 +275,7 @@ window.onload = () => {
       })
           
 };
+window.addEventListener('beforeunload', (e) => {
+
+    firebase.database().ref(`current_game/users/team${team}/${userid}`).remove();
+});
