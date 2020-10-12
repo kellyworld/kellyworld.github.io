@@ -192,7 +192,8 @@ let loadPreview = async () => {}
 let joinGame = (user) => {
     var updates = {};
     updates[`/users/team${team}/${user.id}`] = user;
-    firebase.database().ref('games/current_game').update(updates);
+    firebase.database().ref('games/current_game').update(updates).then(() => {
+        document.getElementById("login").style.display = "none";});
 }
 
 let enterGame = () => {
