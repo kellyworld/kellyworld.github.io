@@ -179,7 +179,11 @@ let addUser = (name, id) => {
         id: id,
         highscore: 0
       })
-      .then(initializeUser(userid));
+      .then(() => {
+          user.username = name; //TODO: logic here is redundant and messy
+          user.id = id;
+          initializeUser(userid); 
+          joinGame(user);});
 }
 
 //TODO: currently before joining a game a bunch of stuff is undefined and it's generally just fugly
@@ -211,7 +215,6 @@ let enterGame = () => {
         //start a game
         startGame();
     }
-    joinGame(user, team);
     document.getElementById("login").style.display = "none";
     
 }
@@ -308,6 +311,7 @@ let startGame = () => {
         .then((snapshot) => {game.pangram = snapshot.val();
             game.centerLetter = game.pangram[Math.floor(Math.random() * game.pangram.length)];
             firebase.database().ref('games/current_game').update(game);
+            joinGame(user);
         });
 }
 
