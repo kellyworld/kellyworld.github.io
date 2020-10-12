@@ -50,13 +50,15 @@ firebase.initializeApp(firebaseConfig);
 
 // change this later to update live
 let gameState = {};
-firebase.database().ref('current_game').once('value').then((snapshot) => gameState = snapshot.val());
-let pangram = (gameState.id == undefined) ? "default" : gameState.pangram;
-let anagrams = (gameState.id == undefined) ? {team1: [], team2: []} : gameState.words;
-let centerLetter = (gameState.id == undefined) ? "" : gameState.center_letter;
-let letters = (gameState.id == undefined) ? ["d", "e", "f", "a", "u", "l", "t"] : initializeLetters(centerLetter, gameState.pangram); // the center letter will always be the 7th slot 
+firebase.database().ref('games/current_game').once('value').then((snapshot) => gameState = snapshot.val());
+firebase.database().ref('games').on("child_changed", (snapshot) => {
+    gameState = snapshot.val();
+    console.log(gameState);
+    initializeLetters(gameState.centerLetter, gameState.pangram);
+});
 let user = {};
 let team = 0;
+let letters = "";
 // lookup/init user
 let userid = localStorage.getItem("spellinghive_id");
 
@@ -100,13 +102,14 @@ let addUser = (name, id) => {
 //idk maybe do this later
 let loadPreview = async () => {}
 
-let joinGame = async (user) => {
+let joinGame = (user) => {
     var updates = {};
     updates[`/users/team${team}/${user.id}`] = user;
-    firebase.database().ref('current_game').update(updates);
+    console.log("whwejtsdfgsdg");
+    firebase.database().ref('games/current_game').update(updates);
 }
 
-let enterGame = async () => {
+let enterGame = () => {
     // if user does not already exist add to database
     if (!user.username){
         let username = document.getElementById("username").value;
@@ -118,27 +121,41 @@ let enterGame = async () => {
     // check if game in session
     if (!gameState) {
         //start a game
-        await startGame();
+        console.log("no game");
+        startGame();
     }
     team = document.querySelector('input[name="team"]:checked').value;
-    await joinGame(user, team);
+    joinGame(user, team);
+    document.getElementById("login").style.display = "none";
 }
 
 // update game state on change
-firebase.database().ref('current_game').on('child_changed', () => {
+firebase.database().ref('games').on('child_changed', () => {
     // update game state
 });
 
 // returns point value of word submission
 let submitWord = (word) => {
     // check valid (> 3 letters, < 15)
+    if (word.length < 4) {
+        return displayWordError("Word too short");
+    } else if (word.length > 14) {
+        return displayWordError("Word too long");
+    }
     checkAnagram(word);
     // check if already submitted
 
+    // push to database if valid
+}
+
+let displayWordError = (error) => {
+    // temporarily shows error if word is invalid
+    alert(error); //do something less shitty later
 }
 
 // HELPER function to check if a word is an anagram of the pangram
 let checkAnagram = (word) => {
+    isAnagram
     // for (word of hivewords){
     //     let isAnagram = true;
     //     for (letter of word){
@@ -152,30 +169,34 @@ let checkAnagram = (word) => {
     // }
 }
 
-// calculate number of points for a word
-let getPoints = () => {
-    return 0;
+/* return score for a word
+* Each four-letter word found is worth one point. 
+* Longer words are scored according to their length, 
+* with five-letter words worth five points, six-letters words worth six points, and so on.
+* If a word is a pangram, it's worth its length plus a bonus of seven points. 
+* For instance, the pangram "whippoorwill" is twelve letters in length, which makes it worth 19 points.
+*/
+let getPoints = (word) => {
+
+    if (word.length == 4) {
+        return 1;
+    } else {
+
+    }
 }
 
 // function should set the current game in the database
 let startGame = () => {
     let t = new Date();
     let game = {
-        time: t.getTime(), 
-        users: {
-            team1: {},
-            team2: {}
-        },
-        pangram: "",
-        words: {
-            team1: {},
-            team2: {}
-        },
-        centerLetter: ""
-    };
-    game.pangram = findPangram();
-    game.centerLetter = game.pangram[Math.floor(Math.random() * 7)]; // random letter from pangram
-    return firebase.database().ref('current_game').set(game); // return promise
+            time: t.getTime(), 
+        };
+    let pangramNum = Math.floor(Math.random() * 37753);
+    firebase.database().ref('pangrams/pangram_list/' + pangramNum).once('value')
+        .then((snapshot) => {game.pangram = snapshot.val();
+            game.centerLetter = game.pangram[Math.floor(Math.random() * game.pangram.length)];
+            firebase.database().ref('games/current_game').update(game);
+        });
 }
 
 
@@ -187,33 +208,19 @@ let getUniqueLetters = (word) => {
     return [...letterSet];
 }
 
-
-// these should be obsolete later... 
-let findPangram = () => {
-    let pangramNum = 0;
-    firebase.database().ref('pangrams/number_of_pangrams').once('value')
-        .then((snapshot) => { 
-            pangramNum = Math.floor(Math.random() * snapshot.val()); // pick a random pangram
-        })
-        .then(() => {
-            firebase.database().ref('pangrams/pangram_list/' + pangramNum).once('value') //retrieve pangram
-            .then((snapshot) => { pangram = snapshot.val(); })
-        });
-    return pangram;
-}
-
 let initializeLetters = (centerLetter, pangram) => {
     let panLetters = getUniqueLetters(pangram);
     let tempLetters = [];
     for(var i = 0; i < panLetters.length; i++) {
-        if (let == centerLetter){
+        if (panLetters[i] == centerLetter){
             // pass
         } else {
             tempLetters.push(panLetters[i]);
         }
     }
     tempLetters.push(centerLetter);
-    return tempLetters;
+    letters = tempLetters;
+    shuffleLetters();
 }
 
 let shuffleLetters = () => {
@@ -268,14 +275,20 @@ window.onload = () => {
     });
 
     document.getElementById("shuffle").addEventListener("click", shuffleLetters);
+
     document.addEventListener('keyup', event => {
         if (event.code === 'Space') {
           shuffleLetters();
         }
-      })
+      });
+
+    document.addEventListener('keyup', event => {
+    if (event.code === 'Enter') {
+        submitWord();
+    }
+    })
           
 };
 window.addEventListener('beforeunload', (e) => {
-
-    firebase.database().ref(`current_game/users/team${team}/${userid}`).remove();
+    firebase.database().ref(`/games/current_game/users/team${team}/${userid}`).remove();
 });

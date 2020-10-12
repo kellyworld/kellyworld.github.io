@@ -44,11 +44,5 @@ exports.makeUppercase = functions.firestore.document('/messages/{documentId}')
 exports.startGame = null; // initiate a game and start timer
 // returns game
 
-/* return score if valid, 0 if invalid
-* Each four-letter word found is worth one point. 
-* Longer words are scored according to their length, 
-* with five-letter words worth five points, six-letters words worth six points, and so on.
-* If a word is a pangram, it's worth its length plus a bonus of seven points. 
-* For instance, the pangram "whippoorwill" is twelve letters in length, which makes it worth 19 points.
-*/
+
 exports.tryWord = null; 
