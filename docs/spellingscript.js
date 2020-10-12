@@ -55,12 +55,32 @@ firebase.database().ref('games').on("child_changed", (snapshot) => {
     gameState = snapshot.val();
     console.log(gameState);
     initializeLetters(gameState.centerLetter, gameState.pangram);
+    console.log(gameState.words.team2);
+    updateScore();
 });
+
 let user = {};
 let team = 0;
 let letters = "";
 // lookup/init user
 let userid = localStorage.getItem("spellinghive_id");
+
+let updateScore = () => {
+    if (gameState.words && gameState.words.team1) {
+        const words = Object.values(gameState.words.team1);
+        let team1Score = words.reduce((acc, curr) => {
+            return acc + getPoints(curr);
+        }, getPoints(words[0]));
+        document.getElementById("team1_score").innerHTML = "Score: " + team1Score;
+    }
+    if (gameState.words && gameState.words.team2) {
+        const words = Object.values(gameState.words.team2);
+        let team2Score = words.reduce((acc, curr) => {
+            return acc + getPoints(curr);
+        }, getPoints(words[0]));
+        document.getElementById("team2_score").innerHTML = "Score: " + team2Score;
+    }
+}
 
 // set user id in local storage if not found
 if (!userid){
@@ -79,6 +99,8 @@ let login = () => {
         document.getElementById("newuser").style.display = "inline-block";
     }
 }
+
+let gameEnd = () => {}
 
 let initializeUser = (userid) => {
     user.id = userid;
@@ -110,6 +132,12 @@ let joinGame = (user) => {
 }
 
 let enterGame = () => {
+    try {
+        team = document.querySelector('input[name="team"]:checked').value;
+    } catch (e) {
+        alert("please select a team");
+        return;
+    }
     // if user does not already exist add to database
     if (!user.username){
         let username = document.getElementById("username").value;
@@ -124,28 +152,44 @@ let enterGame = () => {
         console.log("no game");
         startGame();
     }
-    team = document.querySelector('input[name="team"]:checked').value;
     joinGame(user, team);
     document.getElementById("login").style.display = "none";
+    
 }
-
-// update game state on change
-firebase.database().ref('games').on('child_changed', () => {
-    // update game state
-});
 
 // returns point value of word submission
 let submitWord = (word) => {
     // check valid (> 3 letters, < 15)
     if (word.length < 4) {
-        return displayWordError("Word too short");
+        displayWordError("Word too short");
     } else if (word.length > 14) {
-        return displayWordError("Word too long");
+        displayWordError("Word too long");
+    } else if (!word.includes(gameState.centerLetter)) {
+        displayWordError("Word does not contain center letter");
+    } else if (!isAnagram(word, gameState.pangram)){
+        displayWordError("Letters not in pangram");
+    } else if (gameState.words && gameState.words.team1 && Object.values(gameState.words.team1).includes(word)) {
+        displayWordError("Team 1 already has this word!");
+    } else if (gameState.words && gameState.words.team2 && Object.values(gameState.words.team2).includes(word)) {
+        displayWordError("Team 2 already has this word!");
+    } else {
+        firebase.database().ref('hivedictionary/' + word).once('value').then((snapshot) => {
+            if (snapshot.val()) {
+                console.log(snapshot.val());
+                let newWordKey = firebase.database().ref(`games/current_game/words/team${team}`).push().key;
+                let update = {};
+                update[`games/current_game/words/team${team}/${newWordKey}`] = word;
+                firebase.database().ref().update(update);
+                return getPoints(word);
+            } else {
+                displayWordError("Not a valid dictionary word!");
+            }
+        });
     }
-    checkAnagram(word);
-    // check if already submitted
-
-    // push to database if valid
+    
+    // clear input
+    document.getElementById("tryword").value = "";
+    return 0;
 }
 
 let displayWordError = (error) => {
@@ -153,20 +197,25 @@ let displayWordError = (error) => {
     alert(error); //do something less shitty later
 }
 
-// HELPER function to check if a word is an anagram of the pangram
-let checkAnagram = (word) => {
-    isAnagram
-    // for (word of hivewords){
-    //     let isAnagram = true;
-    //     for (letter of word){
-    //         if (!letters.includes(letter)){
-    //             isAnagram = false;
-    //         }
-    //     }
-    //     if (isAnagram) {
-    //         anagrams.push(word);
-    //     }
-    // }
+// HELPER function to check if a word can be made from the pangram
+// i know this isnt literally what an anagram is but idfl changing it
+let isAnagram = (word, pangram) => {
+    for (letter of word) {
+        if (!pangram.includes(letter)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// checks if word is a true anagram of pangram
+let isTrueAnagram = (word, pangram) => {
+    for (letter of pangram) {
+        if (!word.includes(letter)) {
+            return false;
+        }
+    }
+    return isAnagram(word, pangram);
 }
 
 /* return score for a word
@@ -177,11 +226,14 @@ let checkAnagram = (word) => {
 * For instance, the pangram "whippoorwill" is twelve letters in length, which makes it worth 19 points.
 */
 let getPoints = (word) => {
-
     if (word.length == 4) {
         return 1;
     } else {
-
+        if (isTrueAnagram(word, gameState.pangram)) {
+            return word.length + 7;
+        } else {
+            return word.length;
+        }
     }
 }
 
@@ -255,7 +307,7 @@ let shuffle = (letters) => {
 
 window.onload = () => {
     
-    firebase.database().ref('hivewords').once('value').then((snapshot) => {hivewords = snapshot.val()});
+    // firebase.database().ref('hivewords').once('value').then((snapshot) => {hivewords = snapshot.val()});
     
     // it tries to look up and initialize the user upon load based on id. 
     // if it can't the user object will be empty except id
@@ -264,6 +316,11 @@ window.onload = () => {
 
     document.getElementById("buzzin").addEventListener("click", () => {
         enterGame(); 
+    });
+
+    document.getElementById("try").addEventListener("click", () => {
+        const word = document.getElementById("tryword").value;
+        submitWord(word); 
     });
 
     document.getElementById("howto-toggle").addEventListener("click", () => {
@@ -276,17 +333,18 @@ window.onload = () => {
 
     document.getElementById("shuffle").addEventListener("click", shuffleLetters);
 
-    document.addEventListener('keyup', event => {
+    document.addEventListener('keyup', (event) => {
         if (event.code === 'Space') {
           shuffleLetters();
         }
       });
 
-    document.addEventListener('keyup', event => {
-    if (event.code === 'Enter') {
-        submitWord();
-    }
-    })
+    document.getElementById("tryword").addEventListener('keyup', (event) => {
+        if (event.code === 'Enter') {
+            const word = document.getElementById("tryword").value;
+            submitWord(word); 
+        }
+    });
           
 };
 window.addEventListener('beforeunload', (e) => {
