@@ -48,39 +48,26 @@ var firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// change this later to update live
 let gameState = {};
-firebase.database().ref('games/current_game').once('value').then((snapshot) => gameState = snapshot.val());
+firebase.database().ref('games/current_game').once('value').then((snapshot) => {
+    gameState = snapshot.val();
+    updateScore();
+});
+
+// update game state
 firebase.database().ref('games').on("child_changed", (snapshot) => {
     gameState = snapshot.val();
-    console.log(gameState);
     initializeLetters(gameState.centerLetter, gameState.pangram);
-    console.log(gameState.words.team2);
     updateScore();
 });
 
 let user = {};
 let team = 0;
 let letters = "";
-// lookup/init user
-let userid = localStorage.getItem("spellinghive_id");
 
-let updateScore = () => {
-    if (gameState.words && gameState.words.team1) {
-        const words = Object.values(gameState.words.team1);
-        let team1Score = words.reduce((acc, curr) => {
-            return acc + getPoints(curr);
-        }, getPoints(words[0]));
-        document.getElementById("team1_score").innerHTML = "Score: " + team1Score;
-    }
-    if (gameState.words && gameState.words.team2) {
-        const words = Object.values(gameState.words.team2);
-        let team2Score = words.reduce((acc, curr) => {
-            return acc + getPoints(curr);
-        }, getPoints(words[0]));
-        document.getElementById("team2_score").innerHTML = "Score: " + team2Score;
-    }
-}
+// lookup user
+
+let userid = localStorage.getItem("spellinghive_id");
 
 // set user id in local storage if not found
 if (!userid){
@@ -89,6 +76,26 @@ if (!userid){
     localStorage.setItem("spellinghive_id", userid);
 }
 
+let updateScore = () => {
+    let team1Score = 0;
+    let team2Score = 0;
+    if (gameState.words && gameState.words.team1) {
+        const words = Object.values(gameState.words.team1);
+        team1Score = words.reduce((acc, curr) => {
+            return acc + getPoints(curr);
+        }, getPoints(words[0]));
+    } 
+    if (gameState.words && gameState.words.team2) {
+        const words = Object.values(gameState.words.team2);
+        team2Score = words.reduce((acc, curr) => {
+            return acc + getPoints(curr);
+        }, getPoints(words[0]));
+    }
+    document.getElementById("team1_score").innerHTML = "Score: " + team1Score;
+    document.getElementById("team2_score").innerHTML = "Score: " + team2Score;
+}
+
+// removes relevant elements. misleading name
 let login = () => {
     document.getElementById("loading").style.display = "none";
     document.getElementById("login").style.display = "block";
@@ -100,19 +107,73 @@ let login = () => {
     }
 }
 
-let gameEnd = () => {}
+let resetTeams = () => {
+    document.getElementById("users1").innerHTML = "";
+    document.getElementById("users2").innerHTML = "";
+    document.getElementById("words1").innerHTML = "";
+    document.getElementById("words2").innerHTML = "";
+}
+
+let updateTime = () => {
+    var date = new Date(); 
+    
+    var timeDiff = date.getTime() - gameState.time;
+
+    var min = Math.floor(timeDiff/120000); 
+    timeDiff -= min*120000;
+    
+    var sec = Math.floor(timeDiff/2000);
+    if (sec < 10) {
+        sec = "0" + sec;
+    }
+    document.getElementById("timer").innerHTML = `Time elapsed: ${min}:${sec}`;
+
+    if (min >= 2) {
+        gameEnd();
+    }
+
+    var t = setTimeout(function(){ updateTime() }, 1000); // update every second
+}
+
+let gameEnd = () => {
+    let winner = (document.getElementById("team1_score").innerText > document.getElementById("team2_score").innerText) ? "Team 1" : "Team 2"
+    alert(`Round over. The winner is ${winner}`);
+    // only update game if you are the oldest user playing lol
+    let oldest = true;
+    let userlist = [];
+    if (gameState.users && gameState.users.team1) {
+        userlist += gameState.users.team1;
+    }
+    if (gameState.users && gameState.users.team2) {
+        userlist += gameState.users.team2;
+    }
+    for (u of userlist) {
+        if (u.id > user.id) {
+            oldest = false;
+        }
+    }
+
+    // i have to reset the word and user lists here bc child_removed is not working for when you update the entire parent node
+    resetTeams();
+
+    if (oldest) {
+        startGame();
+        joinGame(user);
+    }
+}
 
 let initializeUser = (userid) => {
     user.id = userid;
     return firebase.database().ref('/users/' + userid).once('value').then((snapshot) => {
-        user.username = snapshot.val().username;
-        user.highscore = snapshot.val().highscore;
+        if (snapshot.val()) {
+            user.username = snapshot.val().username;
+            user.highscore = snapshot.val().highscore;
+        }
         login();
     });
 }
 
 let addUser = (name, id) => {
-    console.log(id);
     firebase.database().ref('users/' + id).set({
         username: name,
         id: id,
@@ -121,13 +182,12 @@ let addUser = (name, id) => {
       .then(initializeUser(userid));
 }
 
-//idk maybe do this later
+//TODO: currently before joining a game a bunch of stuff is undefined and it's generally just fugly
 let loadPreview = async () => {}
 
 let joinGame = (user) => {
     var updates = {};
     updates[`/users/team${team}/${user.id}`] = user;
-    console.log("whwejtsdfgsdg");
     firebase.database().ref('games/current_game').update(updates);
 }
 
@@ -149,7 +209,6 @@ let enterGame = () => {
     // check if game in session
     if (!gameState) {
         //start a game
-        console.log("no game");
         startGame();
     }
     joinGame(user, team);
@@ -175,7 +234,6 @@ let submitWord = (word) => {
     } else {
         firebase.database().ref('hivedictionary/' + word).once('value').then((snapshot) => {
             if (snapshot.val()) {
-                console.log(snapshot.val());
                 let newWordKey = firebase.database().ref(`games/current_game/words/team${team}`).push().key;
                 let update = {};
                 update[`games/current_game/words/team${team}/${newWordKey}`] = word;
@@ -194,7 +252,7 @@ let submitWord = (word) => {
 
 let displayWordError = (error) => {
     // temporarily shows error if word is invalid
-    alert(error); //do something less shitty later
+    alert(error); //TODO: do something less ugly here
 }
 
 // HELPER function to check if a word can be made from the pangram
@@ -224,6 +282,7 @@ let isTrueAnagram = (word, pangram) => {
 * with five-letter words worth five points, six-letters words worth six points, and so on.
 * If a word is a pangram, it's worth its length plus a bonus of seven points. 
 * For instance, the pangram "whippoorwill" is twelve letters in length, which makes it worth 19 points.
+* Pretty sure this is broken somehow but whatever
 */
 let getPoints = (word) => {
     if (word.length == 4) {
@@ -242,6 +301,7 @@ let startGame = () => {
     let t = new Date();
     let game = {
             time: t.getTime(), 
+            words: null
         };
     let pangramNum = Math.floor(Math.random() * 37753);
     firebase.database().ref('pangrams/pangram_list/' + pangramNum).once('value')
@@ -277,6 +337,7 @@ let initializeLetters = (centerLetter, pangram) => {
 
 let shuffleLetters = () => {
     shuffle(letters);
+    // TODO: for some reason it shuffles every time you enter a word 
     const letterSlots = document.getElementById("letters").children;
     for (var i = 0; i < 7; i++){
         letterSlots[i].innerHTML = letters[i];
@@ -345,6 +406,8 @@ window.onload = () => {
             submitWord(word); 
         }
     });
+
+    updateTime();
           
 };
 window.addEventListener('beforeunload', (e) => {
