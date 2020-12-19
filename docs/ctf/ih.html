@@ -4,12 +4,12 @@
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
     <script>
-        if (document.cookie == "dHJ1ZQ"){
+        window.onload = () => {if (document.cookie == "dHJ1ZQ"){
             console.log("Admin");
         } else {
             var pics = document.getElementById("pics");
             pics.innerHTML = "<h3>Sorry, you cannot access this.</h3>";
-        }
+        }}
     </script>
 </head>
 <body>
