@@ -5,3 +5,20 @@
     font-family: "Open Sans";
     src: url(OpenSans-Regular.ttf);
 }
+.prof {
+    width: 80px;
+}
+.user {
+    background-color:whitesmoke;
+}
+.post {
+    background-color:lightblue;
+}
+#feed {
+    width: 70%; 
+    float:left;
+}
+#friends{
+    width: 30%;
+    float:right;
+}

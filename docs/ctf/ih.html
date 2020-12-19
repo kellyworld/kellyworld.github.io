@@ -1,13 +1,33 @@
 <!DOCTYPE html>
 <head>
     <title>InstaHam</title>
-    <!-- TODO: Create profile pages. Add flag -->
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        if (document.cookie == "dHJ1ZQ"){
+            console.log("Admin");
+        } else {
+            var pics = document.getElementById("pics");
+            pics.innerHTML = "<h3>Sorry, you cannot access this.</h3>";
+        }
+    </script>
 </head>
 <body>
-    <div id="challenge-desc">
+    <div id="description">
         <p>InstaHam is an online social media platform where people post their best pictures of ham for the world to see.</p>
         <p>However, weirdly enough, some people have set their profiles to private. Whats up with that???</p>
         <p>You want to see these private hams. Find user @besthams' private hams.</p>
-        <button id="start">Start</button>
+        <button id="start" onClick="hideDescription()">Start</button>
+    </div>
+    <div id="challenge">
+        <img src="profile.jpeg" class="profile" /> 
+        @besthams
+        <div id="pics">
+            <img src="secret1.jpeg" class="pic" />
+            <img src="secret2.jpeg" class="pic" />
+            <img src="secret3.jpeg" class="pic" />
+            <img src="secret4.jpeg" class="pic" />
+            <img src="secret5.jpeg" class="pic" />
+        </div>
     </div>
 </body>
